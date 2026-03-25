@@ -27,8 +27,20 @@ class AIInterviewCoach:
             f"--- JOB DESCRIPTION ---\n{jd_text}\n\n--- CANDIDATE RESUME ---\n{resume_text}"
         ])
         
-        # 2. Vector Store Setup (FAISS)
-        embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=self.api_key)
+        # 2. Vector Store Setup (FAISS) - Self-healing discovery
+        embeddings = None
+        for model_name in ["models/text-embedding-004", "models/embedding-001", "text-embedding-004", "embedding-001"]:
+            try:
+                test_embeddings = GoogleGenerativeAIEmbeddings(model=model_name, google_api_key=self.api_key)
+                test_embeddings.embed_query("health check")
+                embeddings = test_embeddings
+                break
+            except Exception:
+                continue
+        
+        if not embeddings:
+            raise ValueError("No compatible Gemini embedding models found for this API project.")
+            
         vectorstore = FAISS.from_documents(docs, embeddings)
         retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
         

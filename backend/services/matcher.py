@@ -10,11 +10,20 @@ bert_model = None
 def get_bert_model():
     global bert_model
     if bert_model is None:
-        try:
-            api_key = os.getenv("GEMINI_API_KEY")
-            bert_model = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=api_key)
-        except Exception as e:
-            print(f"Warning: Advanced Embeddings could not be loaded. {e}")
+        api_key = os.getenv("GEMINI_API_KEY")
+        # Self-healing discovery: Try known-good model names until one works
+        for model_name in ["models/text-embedding-004", "models/embedding-001", "text-embedding-004", "embedding-001"]:
+            try:
+                test_model = GoogleGenerativeAIEmbeddings(model=model_name, google_api_key=api_key)
+                # Quick test to verify compatibility
+                test_model.embed_query("health check")
+                bert_model = test_model
+                print(f"SUCCESS: Found working embedding model: {model_name}")
+                break
+            except Exception:
+                continue
+        if bert_model is None:
+            print("Warning: No compatible Gemini embedding models found.")
             bert_model = False
     return bert_model
 

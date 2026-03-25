@@ -31,7 +31,7 @@ session_coaches = {}
 
 @app.get("/")
 async def health_check():
-    return {"status": "HireSense AI Backend is Healthy", "version": "1.0.0"}
+    return {"status": "HireSense AI Backend is Healthy", "version": "1.1.0"}
 
 class MatchResponse(BaseModel):
     multi_factor_score: float
