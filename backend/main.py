@@ -77,20 +77,24 @@ async def start_interview(
     jd_text: str = Form(...),
     resume_text: str = Form(...)
 ):
-    logger.info("Initializing new AI Interview Coaching Session")
-    session_id = str(uuid.uuid4())
-    coach = AIInterviewCoach(resume_text, jd_text)
-    
-    if not coach.api_key:
-        raise HTTPException(status_code=500, detail="Server config missing GEMINI_API_KEY. Set it in .env.")
+    try:
+        logger.info("Initializing new AI Interview Coaching Session")
+        session_id = str(uuid.uuid4())
+        coach = AIInterviewCoach(resume_text, jd_text)
         
-    session_coaches[session_id] = coach
-    
-    # Prompt the AI to begin the interview
-    initial_prompt = "Hello! Please introduce yourself quickly as the HireSense AI Interview Coach, and ask your first question based on my resume."
-    reply = coach.interact(initial_prompt)
-    
-    return {"session_id": session_id, "reply": reply}
+        if not coach.api_key:
+            raise HTTPException(status_code=500, detail="Server config missing GEMINI_API_KEY. Set it in .env.")
+            
+        session_coaches[session_id] = coach
+        
+        # Prompt the AI to begin the interview
+        initial_prompt = "Hello! Please introduce yourself quickly as the HireSense AI Interview Coach, and ask your first question based on my resume."
+        reply = coach.interact(initial_prompt)
+        
+        return {"session_id": session_id, "reply": reply}
+    except Exception as e:
+        logger.error(f"FATAL ERROR starting interview: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Interview Engine Error: {str(e)}")
 
 @app.post("/interview/chat")
 async def chat_interview(request: ChatRequest):
