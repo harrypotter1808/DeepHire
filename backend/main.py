@@ -31,7 +31,27 @@ session_coaches = {}
 
 @app.get("/")
 async def health_check():
-    return {"status": "HireSense AI Backend is Healthy", "version": "1.1.0"}
+    return {"status": "HireSense AI Backend is Healthy", "version": "1.2.0"}
+
+@app.get("/diag/models")
+async def list_available_models():
+    """Diagnostic endpoint to see what models this API key can actually use."""
+    try:
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            return {"error": "GEMINI_API_KEY environment variable not set."}
+        
+        genai.configure(api_key=api_key)
+        models = []
+        for m in genai.list_models():
+            models.append({
+                "name": m.name,
+                "display_name": m.display_name,
+                "supported_methods": m.supported_generation_methods
+            })
+        return {"available_models": models}
+    except Exception as e:
+        return {"error": f"Failed to list models: {str(e)}"}
 
 class MatchResponse(BaseModel):
     multi_factor_score: float
