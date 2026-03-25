@@ -15,5 +15,6 @@ langchain-google-genai==1.0.8
 faiss-cpu>=1.7.4
 python-dotenv>=1.0.0
 pydantic>=2.4.0
+python-multipart>=0.0.9
 pytest>=7.4.2
 SHAP>=0.42.1
