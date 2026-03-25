@@ -29,6 +29,10 @@ app.add_middleware(
 # In-memory store for AI Coaches (Production should use Redis)
 session_coaches = {}
 
+@app.get("/")
+async def health_check():
+    return {"status": "HireSense AI Backend is Healthy", "version": "1.0.0"}
+
 class MatchResponse(BaseModel):
     multi_factor_score: float
     breakdown: dict
