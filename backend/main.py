@@ -1,3 +1,4 @@
+import os
 import uuid
 import uvicorn
 import logging
@@ -32,7 +33,7 @@ session_coaches = {}
 
 @app.get("/")
 async def health_check():
-    return {"status": "HireSense AI Backend is Healthy", "version": "1.2.0"}
+    return {"status": "HireSense AI Backend is Healthy", "version": "1.2.1"}
 
 @app.get("/diag/models")
 async def list_available_models():
