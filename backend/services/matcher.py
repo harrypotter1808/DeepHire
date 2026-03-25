@@ -11,7 +11,8 @@ def get_bert_model():
     global bert_model
     if bert_model is None:
         try:
-            bert_model = GoogleGenerativeAIEmbeddings(model="text-embedding-004")
+            api_key = os.getenv("GEMINI_API_KEY")
+            bert_model = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=api_key)
         except Exception as e:
             print(f"Warning: Advanced Embeddings could not be loaded. {e}")
             bert_model = False

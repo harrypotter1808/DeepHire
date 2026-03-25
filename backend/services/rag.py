@@ -28,7 +28,7 @@ class AIInterviewCoach:
         ])
         
         # 2. Vector Store Setup (FAISS)
-        embeddings = GoogleGenerativeAIEmbeddings(model="text-embedding-004", google_api_key=self.api_key)
+        embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=self.api_key)
         vectorstore = FAISS.from_documents(docs, embeddings)
         retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
         
