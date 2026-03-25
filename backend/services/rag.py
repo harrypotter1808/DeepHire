@@ -28,12 +28,12 @@ class AIInterviewCoach:
         ])
         
         # 2. Vector Store Setup (FAISS)
-        embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+        embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=self.api_key)
         vectorstore = FAISS.from_documents(docs, embeddings)
         retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
         
         # 3. LLM Configuration
-        llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.7)
+        llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.7, google_api_key=self.api_key)
         
         # 4. Prompt Engineering for AI Coach Profile
         system_prompt = (
@@ -79,7 +79,8 @@ def generate_skill_gap_advice(missing_keywords: list) -> str:
         
     try:
         from langchain_core.prompts import PromptTemplate
-        llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.5)
+        api_key = os.getenv("GEMINI_API_KEY")
+        llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.5, google_api_key=api_key)
         prompt = PromptTemplate.from_template(
             "You are an AI Career Advisor forming a 'Learning Recommendation Engine'.\n"
             "The candidate is actively missing these key skills: {keywords}.\n"
@@ -105,7 +106,8 @@ def optimize_ats_resume(resume_text: str, jd_text: str, missing_keywords: list) 
         
     try:
         from langchain_core.prompts import PromptTemplate
-        llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.6)
+        api_key = os.getenv("GEMINI_API_KEY")
+        llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.6, google_api_key=api_key)
         prompt = PromptTemplate.from_template(
             "You are an elite Tech Recruiter and ATS Optimization Expert.\n"
             "Given the candidate's base resume below, REWRITE their experience and skills to strictly align with the provided Target Job Description.\n\n"
