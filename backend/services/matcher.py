@@ -1,15 +1,21 @@
 import re
 import numpy as np
+import os
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from sentence_transformers import SentenceTransformer
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
-# Initialize BERT for state-of-the-art semantic similarity
-try:
-    bert_model = SentenceTransformer('all-MiniLM-L6-v2')
-except Exception as e:
-    print(f"Warning: SentenceTransformer could not be loaded. {e}")
-    bert_model = None
+bert_model = None
+
+def get_bert_model():
+    global bert_model
+    if bert_model is None:
+        try:
+            bert_model = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+        except Exception as e:
+            print(f"Warning: Advanced Embeddings could not be loaded. {e}")
+            bert_model = False
+    return bert_model
 
 def extract_keywords(text: str) -> set:
     """Extract alphabetic words > 4 chars as naive keywords for explainability"""
@@ -32,11 +38,15 @@ def compute_tfidf_similarity(doc1: str, doc2: str) -> float:
 
 def compute_bert_similarity(doc1: str, doc2: str) -> float:
     """Advanced Metric: Deep Embeddings similarity"""
-    if not doc1 or not doc2 or bert_model is None:
+    model = get_bert_model()
+    if not doc1 or not doc2 or not model:
         return 0.0
-    embeddings = bert_model.encode([doc1, doc2])
-    sim = cosine_similarity([embeddings[0]], [embeddings[1]])[0][0]
-    return float(sim)
+    try:
+        embeddings = model.embed_documents([doc1, doc2])
+        sim = cosine_similarity([embeddings[0]], [embeddings[1]])[0][0]
+        return float(sim)
+    except Exception:
+        return 0.0
 
 def evaluate_resume(jd_text: str, resume_sections: dict) -> dict:
     """
