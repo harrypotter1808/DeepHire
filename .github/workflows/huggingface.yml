@@ -14,4 +14,4 @@ jobs:
       - name: Push to Hugging Face
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: git push https://oauth2:$HF_TOKEN@huggingface.co/spaces/prajwal0818/deep_hire main --force
+        run: git push https://prajwal0818:$HF_TOKEN@huggingface.co/spaces/prajwal0818/deep_hire main --force
