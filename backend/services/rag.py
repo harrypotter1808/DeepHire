@@ -1,8 +1,8 @@
 import os
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.prompts import ChatPromptTemplate
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_core.prompts import ChatPromptTemplate
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 
@@ -78,7 +78,7 @@ def generate_skill_gap_advice(missing_keywords: list) -> str:
         return "Set GEMINI_API_KEY in the backend to unlock AI-powered learning suggestions."
         
     try:
-        from langchain.prompts import PromptTemplate
+        from langchain_core.prompts import PromptTemplate
         llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.5)
         prompt = PromptTemplate.from_template(
             "You are an AI Career Advisor forming a 'Learning Recommendation Engine'.\n"
@@ -104,7 +104,7 @@ def optimize_ats_resume(resume_text: str, jd_text: str, missing_keywords: list) 
         return "Set GEMINI_API_KEY to unlock the One-Click Auto-ATS Optimizer."
         
     try:
-        from langchain.prompts import PromptTemplate
+        from langchain_core.prompts import PromptTemplate
         llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.6)
         prompt = PromptTemplate.from_template(
             "You are an elite Tech Recruiter and ATS Optimization Expert.\n"
