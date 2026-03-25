@@ -1,4 +1,5 @@
 import os
+import google.generativeai as genai
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -27,20 +28,17 @@ class AIInterviewCoach:
             f"--- JOB DESCRIPTION ---\n{jd_text}\n\n--- CANDIDATE RESUME ---\n{resume_text}"
         ])
         
-        # 2. Vector Store Setup (FAISS) - Self-healing discovery
-        embeddings = None
-        for model_name in ["models/text-embedding-004", "models/embedding-001", "text-embedding-004", "embedding-001"]:
-            try:
-                test_embeddings = GoogleGenerativeAIEmbeddings(model=model_name, google_api_key=self.api_key)
-                test_embeddings.embed_query("health check")
-                embeddings = test_embeddings
-                break
-            except Exception:
-                continue
+        # 2. Vector Store Setup (FAISS) - DYNAMIC DISCOVERY
+        genai.configure(api_key=self.api_key)
+        embedding_models = [m.name for m in genai.list_models() if 'embedContent' in m.supported_generation_methods]
         
-        if not embeddings:
-            raise ValueError("No compatible Gemini embedding models found for this API project.")
-            
+        if not embedding_models:
+            raise ValueError("No compatible embedding models found for this Gemini API key.")
+        
+        # Prefer the newest model, otherwise fallback
+        best_model = next((m for m in embedding_models if 'text-embedding-004' in m), embedding_models[0])
+        embeddings = GoogleGenerativeAIEmbeddings(model=best_model, google_api_key=self.api_key)
+        
         vectorstore = FAISS.from_documents(docs, embeddings)
         retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
         
