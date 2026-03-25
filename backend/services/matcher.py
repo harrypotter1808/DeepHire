@@ -11,7 +11,7 @@ def get_bert_model():
     global bert_model
     if bert_model is None:
         try:
-            bert_model = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
+            bert_model = GoogleGenerativeAIEmbeddings(model="text-embedding-004")
         except Exception as e:
             print(f"Warning: Advanced Embeddings could not be loaded. {e}")
             bert_model = False
