@@ -1,6 +1,5 @@
-import re
-import numpy as np
 import os
+import google.generativeai as genai
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
@@ -11,19 +10,19 @@ def get_bert_model():
     global bert_model
     if bert_model is None:
         api_key = os.getenv("GEMINI_API_KEY")
-        # Self-healing discovery: Try known-good model names until one works
-        for model_name in ["models/text-embedding-004", "models/embedding-001", "text-embedding-004", "embedding-001"]:
-            try:
-                test_model = GoogleGenerativeAIEmbeddings(model=model_name, google_api_key=api_key)
-                # Quick test to verify compatibility
-                test_model.embed_query("health check")
-                bert_model = test_model
-                print(f"SUCCESS: Found working embedding model: {model_name}")
-                break
-            except Exception:
-                continue
-        if bert_model is None:
-            print("Warning: No compatible Gemini embedding models found.")
+        # --- DYNAMIC DISCOVERY ---
+        try:
+            genai.configure(api_key=api_key)
+            embedding_models = [m.name for m in genai.list_models() if 'embedContent' in m.supported_generation_methods]
+            if not embedding_models:
+                print("Warning: No embedding models found for this API key.")
+                bert_model = False
+            else:
+                best_model = next((m for m in embedding_models if 'text-embedding-004' in m), embedding_models[0])
+                bert_model = GoogleGenerativeAIEmbeddings(model=best_model, google_api_key=api_key)
+                print(f"SUCCESS: Matcher discovered and using model: {best_model}")
+        except Exception as e:
+            print(f"Warning: Matcher discovery failed. {e}")
             bert_model = False
     return bert_model
 
