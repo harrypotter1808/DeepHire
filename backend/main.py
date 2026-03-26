@@ -33,7 +33,7 @@ session_coaches = {}
 
 @app.get("/")
 async def health_check():
-    return {"status": "HireSense AI Backend is Healthy", "version": "1.2.7"}
+    return {"status": "HireSense AI Backend is Healthy", "version": "1.2.8"}
 
 @app.get("/diag/models")
 async def list_available_models():

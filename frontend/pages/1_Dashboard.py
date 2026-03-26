@@ -82,8 +82,8 @@ if "evaluation_result" in st.session_state:
         st.markdown(result.get("career_advice", "No explicit career advice generated."))
         
     st.divider()
-    st.markdown("### ✨ One-Click ATS Optimization (SaaS Feature)")
-    st.info("Uses **1 Pro Credit** to intelligently rewrite your experience bullets, incorporating missing keywords and strict STAR methodology.")
+    st.markdown("### ✨ One-Click ATS Optimization")
+    st.info("Intelligently rewrite your experience bullets, incorporating missing keywords and strict STAR methodology.")
     
     if st.button("🚀 Auto-Optimize My Resume", type="primary"):
         with st.spinner("Rewriting your resume with Gemini AI..."):
