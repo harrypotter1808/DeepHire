@@ -184,3 +184,31 @@ def optimize_ats_resume(resume_text: str, jd_text: str, missing_keywords: list) 
         return response.content
     except Exception as e:
         return f"Could not optimize resume: {e}"
+
+def convert_to_latex(resume_text: str) -> str:
+    """Uses Gemini LLM to translate a Markdown resume into professional LaTeX source code."""
+    if not os.getenv("GEMINI_API_KEY"):
+        return "Set GEMINI_API_KEY to unlock LaTeX exports."
+        
+    try:
+        from langchain_core.prompts import PromptTemplate
+        api_key = os.getenv("GEMINI_API_KEY")
+        best_model = select_best_chat_model(api_key)
+        llm = ChatGoogleGenerativeAI(model=best_model, temperature=0.2, google_api_key=api_key)
+        
+        prompt = PromptTemplate.from_template(
+            "You are a LaTeX Document Expert and Professional Resume Designer.\n"
+            "Convert the follow Markdown Resume into high-quality, professional LaTeX source code.\n\n"
+            "REQUIREMENTS:\n"
+            "1. Use standard LaTeX packages (article, geometry, hyperref, enumitem).\n"
+            "2. Ensure the design is clean, minimalist, and 'Modern Executive' style.\n"
+            "3. DO NOT use obscure packages that require non-standard environments.\n"
+            "4. The output must be a COMPLETE, compilable .tex document (from \\documentclass to \\end{{document}}).\n"
+            "5. Return ONLY the raw LaTeX code.\n\n"
+            "--- RESUME CONTENT ---\n{resume}"
+        )
+        chain = prompt | llm
+        response = chain.invoke({"resume": resume_text})
+        return response.content
+    except Exception as e:
+        return f"Could not convert to LaTeX: {e}"

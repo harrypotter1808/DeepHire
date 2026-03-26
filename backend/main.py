@@ -33,7 +33,7 @@ session_coaches = {}
 
 @app.get("/")
 async def health_check():
-    return {"status": "HireSense AI Backend is Healthy", "version": "1.2.5"}
+    return {"status": "HireSense AI Backend is Healthy", "version": "1.2.7"}
 
 @app.get("/diag/models")
 async def list_available_models():
@@ -147,6 +147,20 @@ async def optimize_resume_endpoint(request: OptimizeRequest):
         return {"optimized_resume": optimized_text}
     except Exception as e:
         logger.error(f"Error optimizing resume: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+class LaTeXRequest(BaseModel):
+    resume_text: str
+
+@app.post("/convert/latex")
+async def convert_resume_to_latex(request: LaTeXRequest):
+    logger.info("Executing AI-powered LaTeX Conversion")
+    try:
+        from services.rag import convert_to_latex
+        latex_code = convert_to_latex(request.resume_text)
+        return {"latex_source": latex_code}
+    except Exception as e:
+        logger.error(f"Error converting to LaTeX: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":

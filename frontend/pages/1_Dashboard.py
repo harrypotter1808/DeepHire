@@ -104,6 +104,31 @@ if "evaluation_result" in st.session_state:
     if "optimized_resume" in st.session_state:
         with st.expander("View ATS-Optimized Resume", expanded=True):
             st.markdown(st.session_state["optimized_resume"])
-            st.download_button("Download Optimized Resume (.md)", 
-                             st.session_state["optimized_resume"], 
-                             file_name="optimized_resume.md")
+            
+            c1, c2 = st.columns(2)
+            with c1:
+                st.download_button("📥 Download Markdown (.md)", 
+                                 st.session_state["optimized_resume"], 
+                                 file_name="optimized_resume.md")
+            
+            with c2:
+                if st.button("🎨 Convert to Professional LaTeX"):
+                    with st.spinner("Translating to LaTeX..."):
+                        try:
+                            lat_resp = requests.post(f"{API_URL}/convert/latex", json={
+                                "resume_text": st.session_state["optimized_resume"]
+                            })
+                            if lat_resp.status_code == 200:
+                                st.session_state["latex_source"] = lat_resp.json()["latex_source"]
+                                st.success("LaTeX Generated!")
+                            else:
+                                st.error("LaTeX Conversion failed.")
+                        except Exception as lat_e:
+                            st.error(f"LaTeX API Connection failed: {lat_e}")
+
+    if "latex_source" in st.session_state:
+        with st.expander("View LaTeX Source", expanded=True):
+            st.code(st.session_state["latex_source"], language="latex")
+            st.download_button("📥 Download LaTeX (.tex)", 
+                             st.session_state["latex_source"], 
+                             file_name="resume.tex")
