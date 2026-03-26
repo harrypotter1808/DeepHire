@@ -68,7 +68,8 @@ class AIInterviewCoach:
         retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
         
         # 3. LLM Configuration
-        llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.7, google_api_key=self.api_key)
+        best_chat_model = select_best_chat_model(self.api_key)
+        llm = ChatGoogleGenerativeAI(model=best_chat_model, temperature=0.7, google_api_key=self.api_key)
         
         # 4. Prompt Engineering for AI Coach Profile
         system_prompt = (
