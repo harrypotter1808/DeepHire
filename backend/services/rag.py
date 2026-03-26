@@ -116,7 +116,8 @@ def generate_skill_gap_advice(missing_keywords: list) -> str:
     try:
         from langchain_core.prompts import PromptTemplate
         api_key = os.getenv("GEMINI_API_KEY")
-        llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.5, google_api_key=api_key)
+        best_model = select_best_chat_model(api_key)
+        llm = ChatGoogleGenerativeAI(model=best_model, temperature=0.5, google_api_key=api_key)
         prompt = PromptTemplate.from_template(
             "You are an AI Career Advisor forming a 'Learning Recommendation Engine'.\n"
             "The candidate is actively missing these key skills: {keywords}.\n"
