@@ -33,7 +33,7 @@ session_coaches = {}
 
 @app.get("/")
 async def health_check():
-    return {"status": "HireSense AI Backend is Healthy", "version": "1.2.4"}
+    return {"status": "HireSense AI Backend is Healthy", "version": "1.2.5"}
 
 @app.get("/diag/models")
 async def list_available_models():
@@ -83,7 +83,7 @@ async def match_resume_to_jd(
         evaluation = evaluate_resume(jd_text, sections)
         
         missing_keys = evaluation["explainability"]["missing_keywords"]
-        advice = generate_skill_gap_advice(missing_keys) if missing_keys else "You meet all keyword requirements for this role!"
+        advice = generate_skill_gap_advice(missing_keys, raw_text, jd_text)
         
         logger.info(f"Match computed: Score {evaluation['multi_factor_score']}")
         

@@ -108,28 +108,47 @@ class AIInterviewCoach:
         except Exception as e:
             return f"An error occurred communicating with the AI Model: {str(e)}"
 
-def generate_skill_gap_advice(missing_keywords: list) -> str:
-    """Uses Gemini LLM to generate learning resources for missing keywords."""
-    if not os.getenv("GEMINI_API_KEY") or not missing_keywords:
-        return "Set GEMINI_API_KEY in the backend to unlock AI-powered learning suggestions."
+def generate_skill_gap_advice(missing_keywords: list, resume_text: str, jd_text: str) -> str:
+    """Uses Gemini LLM to generate deep, context-aware learning resources based on the candidate's background."""
+    if not os.getenv("GEMINI_API_KEY"):
+        return "Set GEMINI_API_KEY in the backend to unlock AI-powered career pathing."
         
+    if not missing_keywords:
+        return "Great job! You already possess all the core technical skills requested for this role. Consider focusing on advanced soft skills or leadership certifications."
+
     try:
         from langchain_core.prompts import PromptTemplate
         api_key = os.getenv("GEMINI_API_KEY")
         best_model = select_best_chat_model(api_key)
         llm = ChatGoogleGenerativeAI(model=best_model, temperature=0.5, google_api_key=api_key)
+        
         prompt = PromptTemplate.from_template(
-            "You are an AI Career Advisor forming a 'Learning Recommendation Engine'.\n"
-            "The candidate is actively missing these key skills: {keywords}.\n"
-            "Start by clearly stating: 'You are missing: [skills]'.\n"
-            "Then, output a highly personalized learning path in Markdown format with these exact three headers:\n"
-            "### 📚 Recommended Courses\n"
-            "(Suggest 2 specific, high-quality courses from platforms like Coursera/Udemy/Pluralsight)\n\n"
-            "### 🛠️ Projects to Build\n"
-            "(Suggest 2 concrete, portfolio-worthy project ideas that practice these exact missing skills)\n\n"
+            "You are an Elite Career Strategic Advisor and Industry Expert.\n"
+            "The candidate is applying for a role with this Target Job Description:\n{jd}\n\n"
+            "The candidate's current background (Resume) is:\n{resume}\n\n"
+            "The candidate is specifically missing these technical/soft skills: {keywords}.\n\n"
+            "TASK:\n"
+            "1. Analyze the 'Skill Gap' by comparing their current experience to the target role.\n"
+            "2. Provide highly personalized, 'Real-World' advice. (e.g., 'Since you are a Senior Dev, don't take a beginner Python course; instead, focus on this Architect-level cloud course').\n"
+            "3. Output a detailed Markdown learning path with these exact sections:\n\n"
+            "### 🏁 Strategic Career Advice\n"
+            "(2-3 sentences on how they should pivot or frame their existing experience to bridge this gap)\n\n"
+            "### 📚 Recommended High-Value Courses\n"
+            "(Suggest 2 specific, industry-standard courses with platform names)\n\n"
+            "### 🛠️ Real-World Projects to Build\n"
+            "(Suggest 2 concrete, portfolio-worthy project ideas that are directly relevant to this specific Job Description)\n\n"
             "### 🏆 Certifications\n"
-            "(Suggest 1-2 relevant industry certifications that validate these missing skills)"
+            "(Suggest 1-2 relevant certifications that carry weight in the real world for this specific role)"
         )
+        chain = prompt | llm
+        response = chain.invoke({
+            "keywords": ", ".join(missing_keywords),
+            "resume": resume_text,
+            "jd": jd_text
+        })
+        return response.content
+    except Exception as e:
+        return f"Could not generate career advice: {e}"
         chain = prompt | llm
         response = chain.invoke({"keywords": ", ".join(missing_keywords)})
         return response.content
@@ -144,7 +163,8 @@ def optimize_ats_resume(resume_text: str, jd_text: str, missing_keywords: list) 
     try:
         from langchain_core.prompts import PromptTemplate
         api_key = os.getenv("GEMINI_API_KEY")
-        llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.6, google_api_key=api_key)
+        best_model = select_best_chat_model(api_key)
+        llm = ChatGoogleGenerativeAI(model=best_model, temperature=0.6, google_api_key=api_key)
         prompt = PromptTemplate.from_template(
             "You are an elite Tech Recruiter and ATS Optimization Expert.\n"
             "Given the candidate's base resume below, REWRITE their experience and skills to strictly align with the provided Target Job Description.\n\n"
