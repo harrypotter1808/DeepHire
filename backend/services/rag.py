@@ -30,13 +30,22 @@ class AIInterviewCoach:
         
         # 2. Vector Store Setup (FAISS) - DYNAMIC DISCOVERY
         genai.configure(api_key=self.api_key)
-        embedding_models = [m.name for m in genai.list_models() if 'embedContent' in m.supported_generation_methods]
+        all_models = list(genai.list_models())
+        embedding_models = [m.name for m in all_models if any('embed' in method.lower() for method in m.supported_generation_methods)]
         
         if not embedding_models:
             raise ValueError("No compatible embedding models found for this Gemini API key.")
         
-        # Prefer the newest model, otherwise fallback
-        best_model = next((m for m in embedding_models if 'text-embedding-004' in m), embedding_models[0])
+        # Prioritized list: Try text-embedding-004, then gemini-embedding-001, then embedding-001
+        prioritized = ['text-embedding-004', 'gemini-embedding-001', 'embedding-001']
+        best_model = None
+        for p in prioritized:
+            best_model = next((m for m in embedding_models if p in m), None)
+            if best_model: break
+            
+        # Still no match in priorities? Use the first available embedding model
+        best_model = best_model or embedding_models[0]
+        
         embeddings = GoogleGenerativeAIEmbeddings(model=best_model, google_api_key=self.api_key)
         
         vectorstore = FAISS.from_documents(docs, embeddings)

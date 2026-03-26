@@ -15,12 +15,24 @@ def get_bert_model():
         # --- DYNAMIC DISCOVERY ---
         try:
             genai.configure(api_key=api_key)
-            embedding_models = [m.name for m in genai.list_models() if 'embedContent' in m.supported_generation_methods]
+            # Find any model that supports embedding
+            all_models = list(genai.list_models())
+            embedding_models = [m.name for m in all_models if any('embed' in method.lower() for method in m.supported_generation_methods)]
+            
             if not embedding_models:
                 print("Warning: No embedding models found for this API key.")
                 bert_model = False
             else:
-                best_model = next((m for m in embedding_models if 'text-embedding-004' in m), embedding_models[0])
+                # Prioritized list: Try text-embedding-004, then gemini-embedding-001, then embedding-001
+                prioritized = ['text-embedding-004', 'gemini-embedding-001', 'embedding-001']
+                best_model = None
+                for p in prioritized:
+                    best_model = next((m for m in embedding_models if p in m), None)
+                    if best_model: break
+                
+                # Still no match in priorities? Use the first available embedding model
+                best_model = best_model or embedding_models[0]
+                
                 bert_model = GoogleGenerativeAIEmbeddings(model=best_model, google_api_key=api_key)
                 print(f"SUCCESS: Matcher discovered and using model: {best_model}")
         except Exception as e:
