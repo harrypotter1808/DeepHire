@@ -7,6 +7,22 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 
+def select_best_chat_model(api_key):
+    """Dynamically discover the best available Chat/Generation model for this API key."""
+    try:
+        genai.configure(api_key=api_key)
+        gen_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+        
+        # Priority mapping: Try to find the highest-tier Flash/Pro models available
+        priorities = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash', 'gemini-flash-latest', 'gemini-1.5-flash', 'gemini-1.5-pro']
+        for p in priorities:
+            match = next((m for m in gen_models if p in m), None)
+            if match:
+                return match
+        return gen_models[0] if gen_models else "models/gemini-1.5-flash"
+    except Exception:
+        return "models/gemini-1.5-flash"
+
 class AIInterviewCoach:
     """
     RAG-based Interview Coach utilizing LangChain, FAISS, and Gemini 1.5 Flash.
